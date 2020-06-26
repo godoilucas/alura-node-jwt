@@ -1,4 +1,4 @@
-const postsDao = require('./posts-dao');
+const postsDao   = require('./posts-dao');
 const validacoes = require('../validacoes-comuns');
 
 class Post {

@@ -1,4 +1,4 @@
-const posts = require('./src/posts');
+const posts    = require('./src/posts');
 const usuarios = require('./src/usuarios');
 
 module.exports = app => {

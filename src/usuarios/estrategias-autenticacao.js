@@ -1,12 +1,14 @@
-const passport                  = require('passport');
-const LocalStrategy             = require('passport-local').Strategy;
-const Usuario                   = require('./usuarios-modelo');
-const { InvalidArggumentError } = require('../erros');
-const bcrypt                    = require('bcrypt');
+const passport                 = require('passport');
+const LocalStrategy            = require('passport-local').Strategy;
+const BearerStrategy           = require('passport-http-bearer').Strategy;
+const Usuario                  = require('./usuarios-modelo');
+const { InvalidArgumentError } = require('../erros');
+const bcrypt                   = require('bcrypt');
+const jwt                      = require('jsonwebtoken');
 
 function verificaUsuario(usuario){
     if(!usuario){
-        throw new InvalidArggumentError('Usuário não encontrado com o e-mail informado');
+        throw new InvalidArgumentError('Usuário não encontrado com o e-mail informado');
     }
 }
 
@@ -14,7 +16,7 @@ function verificaUsuario(usuario){
 async function verificarSenha(senha, senhaHash){
     const senhaValida = await bcrypt.compare(senha, senhaHash);
     if(!senhaValida){
-        throw new InvalidArggumentError('E-mail ou senha inválidos');
+        throw new InvalidArgumentError('E-mail ou senha inválidos');
     }
 }
 
@@ -34,6 +36,20 @@ passport.use(
             } catch (error) {
                 done(error);
             }
+        }
+    )
+);
+
+passport.use(
+    new BearerStrategy(
+        async (token, done) => {
+            try{
+                const payload = jwt.verify(token, process.env.CHAVE_JWT);
+                const usuario = await Usuario.buscaPorId(payload.id);
+                done(null, usuario);
+            } catch(erro){
+                done(erro);
+            }            
         }
     )
 );
