@@ -5,6 +5,7 @@ const Usuario                  = require('./usuarios-modelo');
 const { InvalidArgumentError } = require('../erros');
 const bcrypt                   = require('bcrypt');
 const jwt                      = require('jsonwebtoken');
+const blacklist                = require('../../redis/manipula-blacklist');
 
 function verificaUsuario(usuario){
     if(!usuario){
@@ -12,6 +13,12 @@ function verificaUsuario(usuario){
     }
 }
 
+async function verificaTokenNaBlacklist(token){
+    const tokenNaBlacklist = await blacklist.contemToken(token);
+    if(tokenNaBlacklist){
+        throw new jwt.JsonWebTokenError('Token inválido por logout!');
+    }
+}
 
 async function verificarSenha(senha, senhaHash){
     const senhaValida = await bcrypt.compare(senha, senhaHash);
@@ -44,9 +51,10 @@ passport.use(
     new BearerStrategy(
         async (token, done) => {
             try{
+                await verificaTokenNaBlacklist(token);
                 const payload = jwt.verify(token, process.env.CHAVE_JWT);
                 const usuario = await Usuario.buscaPorId(payload.id);
-                done(null, usuario);
+                done(null, usuario, { token: token });
             } catch(erro){
                 done(erro);
             }            
