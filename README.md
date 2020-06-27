@@ -1,4 +1,4 @@
-# **Node.js Parte 2: MVC, autenticação e autorização**
+# **Node.js e JWT: autenticação com tokens**
 
 ## **Inicialização do arquivo**
 
